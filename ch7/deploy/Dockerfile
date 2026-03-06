@@ -41,6 +41,8 @@ COPY data/ data/
 ENV MLFLOW_TRACKING_URI=http://mlflow-server:5000
 ENV MLFLOW_ENABLE_ASYNC_TRACE_LOGGING=true
 ENV OTEL_SERVICE_NAME=qa-agent-production
+ENV LLM_MODEL=gpt-4o-mini
+ENV EMBEDDING_MODEL=text-embedding-3-small
 
 EXPOSE 8080
 
