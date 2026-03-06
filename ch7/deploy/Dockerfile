@@ -29,7 +29,8 @@ RUN pip install --no-cache-dir "mlflow[genai]>=3.9.0" \
     "exa-py>=1.0.0" \
     "uvicorn>=0.30.0" \
     "fastapi>=0.110.0" \
-    "python-dotenv>=1.0.0"
+    "python-dotenv>=1.0.0" \
+    "setuptools<75"
 
 # アプリケーションコード
 # 第4章のagentsパッケージと第7章のservingパッケージの両方をコピー
