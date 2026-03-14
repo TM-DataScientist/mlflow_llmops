@@ -117,15 +117,16 @@ make test-request
 
 JSON形式のレスポンスが日本語で返れば成功です。MLflow UI（http://localhost:5000）の「Traces」タブにトレースが記録されていることも確認してください。
 
-### ステップ4: サービング中エージェントの評価（7.3節、任意）
+### ステップ4: サービング環境での評価（7.3節、任意）
 
-Agent Serverが起動している状態で実行してください。
+Agent Serverと同じ`@invoke`関数をin-processで実行して評価します。Milvusデータベースのファイルロックが競合するため、**Agent Serverを停止してから**実行してください。
 
 ```bash
+# ステップ2で起動したAgent ServerをCtrl+Cで停止してから実行
 make eval
 ```
 
-3件の評価データで関連性・安全性・ガイドラインのスコアが表示されます。
+3件の評価データで関連性・安全性・ガイドラインのスコアが表示されます。評価後、Agent Serverは`make serve`で再起動できます。
 
 ### （任意）モデル記録・レジストリ登録
 
@@ -197,7 +198,7 @@ make install          # uv sync
 make ingest           # Milvusにドキュメントを取り込み
 make serve            # Agent Serverを起動（7.2）
 make test-request     # curlでテストリクエスト送信（7.2）
-make eval             # サービング中エージェントを評価（7.3）
+make eval             # サービング環境のエージェントを評価（7.3、Agent Server停止後に実行）
 make log-model        # QAエージェントをMLflowに記録（任意、Note参照）
 make test-gateway     # AI Gateway経由でテストリクエスト送信（7.4 新方式）
 make gateway-legacy   # AI Gatewayを起動（7.4 Legacy方式）
@@ -217,6 +218,10 @@ make clean            # 生成ファイルの削除
 ```bash
 uv run python scripts/web_ingest.py --max-pages 20
 ```
+
+### make eval でMilvusエラーが出る場合
+
+`make eval`はAgent Serverと同じエージェントコードをin-processで実行します。Milvus Liteはファイルレベルのロックを使用するため、Agent Serverが`data/milvus.db`を開いている状態では評価スクリプトからアクセスできません。Agent Serverを停止してから`make eval`を実行してください。
 
 ### AI Gateway のバックアップエンドポイント（Legacy方式）
 

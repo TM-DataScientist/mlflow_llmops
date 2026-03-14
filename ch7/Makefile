@@ -8,7 +8,7 @@ help:
 	@echo "  make ingest         Milvusにドキュメントを取り込む"
 	@echo "  make serve          Agent Serverを起動する（7.2節）"
 	@echo "  make test-request   サービングエンドポイントにテストリクエストを送信する（7.2節）"
-	@echo "  make eval           サービング中のエージェントを評価する（7.3節）"
+	@echo "  make eval           サービング環境のエージェントを評価する（7.3節、Agent Server停止後に実行）"
 	@echo "  make log-model      QAエージェントをMLflowに記録する（任意、Note参照）"
 	@echo "  make test-gateway   AI Gateway経由でテストリクエストを送信する（7.4節 新方式）"
 	@echo "  make gateway-legacy AI Gatewayを起動する（7.4節 Legacy方式）"
@@ -28,6 +28,8 @@ test-request:
 		-H "Content-Type: application/json" \
 		-d '{"input": [{"role": "user", "content": "MLflow Tracingとは何ですか?"}]}' | python3 -m json.tool --no-ensure-ascii
 
+# Agent Serverと同じ@invoke関数をin-processで実行して評価する
+# Milvusのファイルロック競合を避けるため、Agent Serverを停止してから実行すること
 eval:
 	uv run python -m serving.eval_serving
 

@@ -1,10 +1,13 @@
-"""サービング中エージェントの評価スクリプト（7.3.3節）。
+"""サービング環境での評価スクリプト（7.3節）。
 
-Agent Server経由で動作するQAエージェントに対して、
+Agent Serverと同じ@invoke関数をin-processで呼び出し、
 第5章と同じ評価フレームワークを適用します。
 
+注意: Agent Serverを停止してから実行してください。
+    エージェント初期化時にMilvusデータベースを開くため、
+    Agent Serverが起動中だとファイルロックが競合します。
+
 使用方法:
-    # Agent Serverが起動している状態で実行
     make eval
     # または
     uv run python -m serving.eval_serving
@@ -62,7 +65,7 @@ EVAL_DATASET = [
             }
         },
         "expected_response": (
-            "MLflowのプロンプトレジストリを使うことで、プロンプトの"
+            "MLflowのPrompt Registryを使うことで、プロンプトの"
             "バージョン管理とエイリアスによるライフサイクル管理が可能です。"
         ),
     },
@@ -96,9 +99,9 @@ def sync_invoke_fn(request: dict) -> ResponsesAgentResponse:
 
 
 def main():
-    """サービング中のエージェントを評価する。"""
+    """サービング環境のエージェントを評価する。"""
     print("=" * 50)
-    print("サービング中エージェントの評価（第7章）")
+    print("サービング環境での評価（第7章）")
     print("=" * 50)
 
     # 第5章と同じスコアラーで評価
