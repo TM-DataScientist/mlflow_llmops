@@ -38,17 +38,17 @@ ch7/
 │
 ├── serving/                # 第7章の新規コード
 │   ├── __init__.py
-│   ├── model_code.py       # 7.2: models-from-code用モデル定義
-│   ├── log_model.py        # 7.2: モデル記録・レジストリ登録
-│   ├── agent.py            # 7.3: Agent Server用ラッパー
-│   ├── start_server.py     # 7.3: Agent Server起動
-│   └── eval_serving.py     # 7.3.3: サービング中エージェントの評価
+│   ├── agent.py            # 7.2: Agent Server用エージェント定義
+│   ├── start_server.py     # 7.2: Agent Server起動
+│   ├── eval_serving.py     # 7.3: サービング環境での評価
+│   ├── model_code.py       # Note: models-from-code用モデル定義（任意）
+│   └── log_model.py        # Note: モデル記録・レジストリ登録（任意）
 │
 ├── gateway/                # 7.4: AI Gateway設定（Legacy方式用）
 │   ├── gateway_config.yaml     # 基本設定
 │   └── gateway_ab_test.yaml    # A/Bテスト設定
 │
-└── deploy/                 # 第7章の新規設定
+└── deploy/                 # 7.5: 本番デプロイメント
     ├── Dockerfile              # 7.5.2: Docker
     └── k8s/
         ├── deployment.yaml     # 7.5.3: Kubernetes Deployment
@@ -101,7 +101,35 @@ uv run mlflow server --port 5000
 
 http://localhost:5000 でUIが表示されることを確認してください。
 
-### ステップ2: モデル記録・レジストリ登録（7.2節）
+### ステップ2: Agent Serverの起動（7.2節、別ターミナル）
+
+```bash
+make serve
+```
+
+ポート5005でResponses APIエンドポイントが起動します。`@invoke()`デコレータで登録されたエージェント関数が`/invocations`で公開され、トレーシングも自動的に有効になります。
+
+### ステップ3: テストリクエスト送信（7.2節）
+
+```bash
+make test-request
+```
+
+JSON形式のレスポンスが日本語で返れば成功です。MLflow UI（http://localhost:5000）の「Traces」タブにトレースが記録されていることも確認してください。
+
+### ステップ4: サービング中エージェントの評価（7.3節、任意）
+
+Agent Serverが起動している状態で実行してください。
+
+```bash
+make eval
+```
+
+3件の評価データで関連性・安全性・ガイドラインのスコアが表示されます。
+
+### （任意）モデル記録・レジストリ登録
+
+Databricks Model Servingへのデプロイ時など、Model Registryを使う場合に実行します。Agent Serverのみで運用する場合は不要です。詳細は本書のNote「models-from-codeとModel Registry」および第10章を参照してください。
 
 ```bash
 make log-model
@@ -112,33 +140,7 @@ make log-model
 - モデルレジストリに登録し `champion` エイリアスを設定
 - ロードして推論テストで動作確認
 
-### ステップ3: Agent Serverの起動（7.3節、別ターミナル）
-
-```bash
-make serve
-```
-
-ポート5005でResponses APIエンドポイントが起動します。
-
-### ステップ4: テストリクエスト送信
-
-```bash
-make test-request
-```
-
-JSON形式のレスポンスが日本語で返れば成功です。
-
-### ステップ5: サービング中エージェントの評価（7.3.3節、任意）
-
-Agent Serverが起動している状態で実行してください。
-
-```bash
-make eval
-```
-
-3件の評価データで関連性・安全性・ガイドラインのスコアが表示されます。
-
-### ステップ6: AI Gatewayのセットアップ（7.4節、任意）
+### ステップ5: AI Gatewayのセットアップ（7.4節、任意）
 
 本書の7.4節では、MLflow 3.10で刷新された**新AI Gateway（Tracking Server統合型）**を解説しています。新AI GatewayではMLflow UIからエンドポイントの作成・管理を行います。
 
@@ -193,10 +195,10 @@ curl -s -X POST http://localhost:5010/gateway/qa-agent-llm/invocations \
 ```
 make install          # uv sync
 make ingest           # Milvusにドキュメントを取り込み
-make log-model        # QAエージェントをMLflowに記録（7.2）
-make serve            # Agent Serverを起動（7.3）
-make test-request     # curlでテストリクエスト送信（7.3）
-make eval             # サービング中エージェントを評価（7.3.3）
+make serve            # Agent Serverを起動（7.2）
+make test-request     # curlでテストリクエスト送信（7.2）
+make eval             # サービング中エージェントを評価（7.3）
+make log-model        # QAエージェントをMLflowに記録（任意、Note参照）
 make test-gateway     # AI Gateway経由でテストリクエスト送信（7.4 新方式）
 make gateway-legacy   # AI Gatewayを起動（7.4 Legacy方式）
 make clean            # 生成ファイルの削除

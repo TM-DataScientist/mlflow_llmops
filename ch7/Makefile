@@ -1,4 +1,4 @@
-.PHONY: install ingest log-model serve test-request eval test-gateway gateway-legacy clean help
+.PHONY: install ingest serve test-request eval log-model test-gateway gateway-legacy clean help
 
 help:
 	@echo "MLflow Sample Agent - サービング（第7章）"
@@ -6,12 +6,12 @@ help:
 	@echo "使用方法:"
 	@echo "  make install        依存関係をインストールする"
 	@echo "  make ingest         Milvusにドキュメントを取り込む"
-	@echo "  make log-model      QAエージェントをMLflowに記録する"
-	@echo "  make serve          Agent Serverを起動する"
-	@echo "  make test-request   サービングエンドポイントにテストリクエストを送信する"
-	@echo "  make eval           サービング中のエージェントを評価する"
-	@echo "  make test-gateway   AI Gateway経由でテストリクエストを送信する(新方式)"
-	@echo "  make gateway-legacy AI Gatewayを起動する(Legacy方式)"
+	@echo "  make serve          Agent Serverを起動する（7.2節）"
+	@echo "  make test-request   サービングエンドポイントにテストリクエストを送信する（7.2節）"
+	@echo "  make eval           サービング中のエージェントを評価する（7.3節）"
+	@echo "  make log-model      QAエージェントをMLflowに記録する（任意、Note参照）"
+	@echo "  make test-gateway   AI Gateway経由でテストリクエストを送信する（7.4節 新方式）"
+	@echo "  make gateway-legacy AI Gatewayを起動する（7.4節 Legacy方式）"
 	@echo "  make clean          生成されたファイルを削除する"
 
 install:
@@ -19,9 +19,6 @@ install:
 
 ingest:
 	uv run python scripts/web_ingest.py
-
-log-model:
-	uv run python -m serving.log_model
 
 serve:
 	uv run python serving/start_server.py --reload --port 5005
@@ -33,6 +30,11 @@ test-request:
 
 eval:
 	uv run python -m serving.eval_serving
+
+# Model Registry方式を使う場合（任意）
+# Databricks Model Servingへのデプロイ時などに利用（Note・第10章参照）
+log-model:
+	uv run python -m serving.log_model
 
 # 新AI Gateway（Tracking Server統合型）のテスト
 # 事前にMLflow UI (http://localhost:5000/#/gateway) でエンドポイントを作成してください
