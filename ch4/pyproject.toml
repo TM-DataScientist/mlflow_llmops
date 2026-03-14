@@ -18,8 +18,10 @@ dependencies = [
     "langchain-openai>=1.0.0",
     "langchain-community>=0.3.0",
     # ベクトルストア
-    "langchain-milvus>=0.2.0",
-    "milvus-lite>=2.4.0",
+    "langchain-milvus>=0.2.0,<0.3.0",
+    "pymilvus>=2.5.7,<2.6.0",
+    "milvus-lite>=2.4.0,<2.5.0",
+    "setuptools<75",
     # ツール
     "exa-py>=1.0.0",
     "requests>=2.31.0",
