@@ -1,10 +1,22 @@
-# AI Gateway設定（7.4節）
+# AI Gateway設定（7.4節）- Gateway Server (Legacy)方式
 #
-# QAエージェントが使用するLLMとEmbeddingエンドポイントを
-# AI Gateway経由で管理します。
+# ■ 推奨: 新AI Gateway（Tracking Server統合型）
+#   MLflow 3.10以降、AI GatewayはTracking Serverに統合されました。
+#   エンドポイントの作成・管理はMLflow UI (http://localhost:5000/#/gateway) から
+#   行えます。本書の7.4節ではこの新方式を解説しています。
 #
-# 起動方法:
+# ■ 本ファイルについて
+#   このYAML設定ファイルは、旧方式（Gateway Server Legacy）で
+#   AI Gatewayを起動する場合に使用します。
+#   UIを使わずにコマンドラインからエンドポイントを再現したい場合や、
+#   設定をバージョン管理したい場合に便利です。
+#
+# 起動方法（Legacy方式）:
 #   mlflow gateway start --config-path gateway/gateway_config.yaml --port 5010
+#
+# 参考:
+#   新AI Gateway: https://mlflow.org/docs/latest/genai/governance/ai-gateway/
+#   Legacy方式: https://mlflow.org/docs/latest/genai/governance/ai-gateway/legacy/
 
 endpoints:
   # QAエージェントのLLMバックエンド

@@ -44,9 +44,9 @@ ch7/
 │   ├── start_server.py     # 7.3: Agent Server起動
 │   └── eval_serving.py     # 7.3.3: サービング中エージェントの評価
 │
-├── gateway/                # 第7章の新規設定
-│   ├── gateway_config.yaml     # 7.4: AI Gateway基本設定
-│   └── gateway_ab_test.yaml    # 7.4.4: A/Bテスト設定
+├── gateway/                # 7.4: AI Gateway設定（Legacy方式用）
+│   ├── gateway_config.yaml     # 基本設定
+│   └── gateway_ab_test.yaml    # A/Bテスト設定
 │
 └── deploy/                 # 第7章の新規設定
     ├── Dockerfile              # 7.5.2: Docker
@@ -138,13 +138,37 @@ make eval
 
 3件の評価データで関連性・安全性・ガイドラインのスコアが表示されます。
 
-### ステップ6: AI Gatewayの起動（7.4節、任意、別ターミナル）
+### ステップ6: AI Gatewayのセットアップ（7.4節、任意）
+
+本書の7.4節では、MLflow 3.10で刷新された**新AI Gateway（Tracking Server統合型）**を解説しています。新AI GatewayではMLflow UIからエンドポイントの作成・管理を行います。
+
+#### 新方式（推奨）: MLflow UIからセットアップ
+
+ステップ1で起動したTracking Serverには、AI Gatewayが組み込まれています。
+
+1. ブラウザで http://localhost:5000/#/gateway にアクセス
+2. **API Keys** タブで OpenAI APIキーを登録:
+   - 名前: `openai-key`
+   - プロバイダー: OpenAI
+   - APIキーの値を入力
+3. **Endpoints** タブでエンドポイントを作成:
+   - `qa-agent-llm` — OpenAI / gpt-4o-mini / openai-key
+   - `qa-agent-embedding` — OpenAI / text-embedding-3-small / openai-key
+4. 動作確認:
 
 ```bash
-make gateway
+make test-gateway
 ```
 
-ポート5010でAI Gatewayが起動します。動作確認：
+#### Legacy方式: YAML設定ファイルからセットアップ
+
+UIを使わずにコマンドラインでセットアップしたい場合や、設定をバージョン管理したい場合は、YAML設定ファイルによるLegacy方式も利用できます。
+
+```bash
+make gateway-legacy
+```
+
+ポート5010でAI Gatewayが別プロセスとして起動します。動作確認：
 
 ```bash
 curl -s -X POST http://localhost:5010/gateway/qa-agent-llm/invocations \
@@ -152,25 +176,30 @@ curl -s -X POST http://localhost:5010/gateway/qa-agent-llm/invocations \
   -d '{"messages": [{"role": "user", "content": "hello"}], "max_tokens": 50}'
 ```
 
+> **注**: 新方式とLegacy方式ではアクセスURLが異なります。
+> - 新方式: `http://localhost:5000/gateway/qa-agent-llm/mlflow/invocations`
+> - Legacy: `http://localhost:5010/gateway/qa-agent-llm/invocations`
+
 ## ポート一覧
 
 | ポート | 用途 |
 |--------|------|
-| 5000 | MLflow Tracking Server |
+| 5000 | MLflow Tracking Server（AI Gateway含む） |
 | 5005 | Agent Server（QAエージェント） |
-| 5010 | AI Gateway |
+| 5010 | AI Gateway Legacy方式（`make gateway-legacy`使用時のみ） |
 
 ## Makefileターゲット一覧
 
 ```
-make install        # uv sync
-make ingest         # Milvusにドキュメントを取り込み
-make log-model      # QAエージェントをMLflowに記録（7.2）
-make serve          # Agent Serverを起動（7.3）
-make test-request   # curlでテストリクエスト送信（7.3）
-make eval           # サービング中エージェントを評価（7.3.3）
-make gateway        # AI Gatewayを起動（7.4）
-make clean          # 生成ファイルの削除
+make install          # uv sync
+make ingest           # Milvusにドキュメントを取り込み
+make log-model        # QAエージェントをMLflowに記録（7.2）
+make serve            # Agent Serverを起動（7.3）
+make test-request     # curlでテストリクエスト送信（7.3）
+make eval             # サービング中エージェントを評価（7.3.3）
+make test-gateway     # AI Gateway経由でテストリクエスト送信（7.4 新方式）
+make gateway-legacy   # AI Gatewayを起動（7.4 Legacy方式）
+make clean            # 生成ファイルの削除
 ```
 
 ## 注意事項
@@ -187,9 +216,9 @@ make clean          # 生成ファイルの削除
 uv run python scripts/web_ingest.py --max-pages 20
 ```
 
-### AI Gateway のバックアップエンドポイント
+### AI Gateway のバックアップエンドポイント（Legacy方式）
 
-`gateway/gateway_config.yaml` にAnthropicをフォールバック用に設定するエンドポイントがコメントアウトされています。利用する場合は `ANTHROPIC_API_KEY` を `.env` に追加し、コメントを解除してください。
+`gateway/gateway_config.yaml` にAnthropicをフォールバック用に設定するエンドポイントがコメントアウトされています。利用する場合は `ANTHROPIC_API_KEY` を `.env` に追加し、コメントを解除してください。新方式では、フォールバックはMLflow UIのエンドポイント設定画面から構成します。
 
 ### 第4章コードとの関係
 
