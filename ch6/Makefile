@@ -13,11 +13,11 @@ help:
 	@echo "  make eval             6.3: 改善したプロンプトで評価 (OPENAI_API_KEY必要)"
 	@echo ""
 	@echo "応用 (OPENAI_API_KEY必要):"
-	@echo "  make optimize-meta    6.5: MetaPromptによる構造改善"
-	@echo "  make optimize-gepa    6.5: GEPAによる反復最適化 (コスト注意)"
-	@echo "  make deploy           6.6: 段階的デプロイとロールバック"
-	@echo "  make model-config     6.7: モデルパラメータの紐付け"
-	@echo "  make structured       6.7: 構造化出力 (OPENAI_API_KEY必要)"
+	@echo "  make optimize-meta    6.3.4: MetaPromptによる構造改善"
+	@echo "  make optimize-gepa    6.3.4: GEPAによる反復最適化 (コスト注意)"
+	@echo "  make deploy           6.3.2: 段階的デプロイとロールバック"
+	@echo "  make model-config     6.2.6: モデルパラメータの紐付け"
+	@echo "  make structured       6.2.7: 構造化出力 (OPENAI_API_KEY必要)"
 	@echo ""
 	@echo "一括実行:"
 	@echo "  make all              基本フロー + deploy + model-config + structured"
@@ -44,23 +44,23 @@ alias:
 eval:
 	uv run python prompts/04_evaluate_prompt.py
 
-# 6.5: MetaPromptによる最適化
+# 6.3.4: MetaPromptによる最適化
 optimize-meta:
 	uv run python prompts/05_optimize_metaprompt.py
 
-# 6.5: GEPAによる最適化
+# 6.3.4: GEPAによる最適化
 optimize-gepa:
 	uv run python prompts/06_optimize_gepa.py
 
-# 6.6: 段階的デプロイとロールバック
+# 6.3.2: 段階的デプロイとロールバック
 deploy:
 	uv run python prompts/07_deploy_lifecycle.py
 
-# 6.7: モデルパラメータの紐付け
+# 6.2.6: モデルパラメータの紐付け
 model-config:
 	uv run python prompts/08_model_config.py
 
-# 6.7: 構造化出力
+# 6.2.7: 構造化出力
 structured:
 	uv run python prompts/09_structured_output.py
 

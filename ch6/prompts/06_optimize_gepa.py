@@ -1,4 +1,4 @@
-"""6.5節: GEPAによるプロンプトの反復最適化
+"""6.3.4節: GEPAによるプロンプトの反復最適化
 
 GEPA(Gradient-free Evolutionary Prompt Alignment)はリフレクションを使って
 プロンプトを反復的に改善するオプティマイザ。MetaPromptより時間・コストがかかるが、

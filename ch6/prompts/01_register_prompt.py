@@ -27,6 +27,11 @@ prompt = mlflow.genai.register_prompt(
     name="qa-agent-system-prompt",
     template=initial_prompt,
     commit_message="QAエージェントの初期プロンプト",
+    tags={
+        "author": "alice@example.com",
+        "task": "qa",
+        "language": "ja",
+    },
 )
 
 print(f"Registered: {prompt.name} (version {prompt.version})")
