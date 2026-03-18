@@ -28,6 +28,7 @@ from data.eval_dataset import EVAL_DATA
 def create_predict_fn(prompt_version: str):
     """指定バージョンのプロンプトで予測関数を作成する。"""
 
+    @mlflow.trace
     def predict_fn(question: str) -> str:
         prompt = mlflow.genai.load_prompt(
             f"prompts:/qa-agent-system-prompt/{prompt_version}"
