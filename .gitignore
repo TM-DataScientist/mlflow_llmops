@@ -5,3 +5,15 @@ CLAUDE.md
 **/.env
 .venv/
 **/.venv/
+
+# MLflow生成ファイル
+*.db
+mlruns/
+**/mlruns/
+mlartifacts/
+**/mlartifacts/
+data/milvus.db
+
+# Python
+__pycache__/
+**/__pycache__/
