@@ -19,6 +19,7 @@ load_dotenv()
 
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("プロンプト評価")
+mlflow.openai.autolog()  # トレースにプロンプトバージョンをひも付ける
 
 # 評価データのインポート
 from data.eval_dataset import EVAL_DATA
