@@ -31,6 +31,7 @@ test-request:
 # Agent Serverと同じ@invoke関数をin-processで実行して評価する
 # Milvusのファイルロック競合を避けるため、Agent Serverを停止してから実行すること
 eval:
+	@echo "⚠️  Agent Serverが起動中の場合はCtrl+Cで停止してから実行してください（Milvusロック競合）"
 	uv run python -m serving.eval_serving
 
 # Model Registry方式を使う場合（任意）
