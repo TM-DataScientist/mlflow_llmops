@@ -14,7 +14,7 @@ prompt = mlflow.genai.register_prompt(
     name="qa-prompt",
     template="以下の質問に答えて下さい: {{question}}",
     model_config={
-        "model_name": "gpt-4",
+        "model_name": "gpt-5-nano-2025-08-07",
         "temperature": 0.7,
         "max_tokens": 1000,
         "top_p": 0.9,

@@ -76,5 +76,5 @@ katakana_judge = make_judge(
 {{ outputs }}
 """,
     feedback_value_type=Literal["yes", "no", "maybe"],
-    model="openai:/gpt-4o-mini",
+    model="openai:/gpt-5-nano-2025-08-07",
 )

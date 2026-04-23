@@ -34,7 +34,7 @@ def create_predict_fn(prompt_version: str):
             f"prompts:/qa-agent-system-prompt/{prompt_version}"
         )
         completion = openai.OpenAI().chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-nano-2025-08-07",
             messages=[
                 {"role": "system", "content": prompt.template},
                 {"role": "user", "content": question},
@@ -51,7 +51,7 @@ def answer_quality(inputs, outputs, expectations):
     """回答が期待される内容をカバーしているか評価する。"""
     expected = expectations.get("expected_answer", "")
     response = openai.OpenAI().chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {
                 "role": "user",

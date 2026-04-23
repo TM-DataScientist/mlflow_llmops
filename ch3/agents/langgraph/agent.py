@@ -72,7 +72,7 @@ class LangGraphAgent:
         Returns:
             コンパイル済みのLangGraphグラフ
         """
-        model = ChatOpenAI(model=os.environ.get("LLM_MODEL", "gpt-4o-mini"))
+        model = ChatOpenAI(model=os.environ.get("LLM_MODEL", "gpt-5-nano-2025-08-07"))
         # ツールがあればモデルにバインド
         model_with_tools = model.bind_tools(self.tools) if self.tools else model
 

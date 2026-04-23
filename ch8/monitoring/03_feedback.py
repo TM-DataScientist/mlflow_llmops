@@ -49,7 +49,7 @@ questions_and_feedback = [
 for item in questions_and_feedback:
     # LLM呼び出し
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {"role": "system", "content": "あなたはMLflowの専門家です。"},
             {"role": "user", "content": item["question"]},

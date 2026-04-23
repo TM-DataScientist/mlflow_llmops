@@ -24,7 +24,7 @@ from data.eval_dataset import EVAL_DATA
 def predict_fn(question: str) -> str:
     prompt = mlflow.genai.load_prompt("prompts:/qa-agent-system-prompt@latest")
     completion = openai.OpenAI().chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {"role": "system", "content": prompt.template},
             {"role": "user", "content": question},
@@ -37,7 +37,7 @@ def predict_fn(question: str) -> str:
 def answer_quality(inputs, outputs, expectations):
     expected = expectations.get("expected_answer", "")
     response = openai.OpenAI().chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {
                 "role": "user",
@@ -62,7 +62,7 @@ result = mlflow.genai.optimize_prompts(
     train_data=EVAL_DATA,
     prompt_uris=["prompts:/qa-agent-system-prompt@latest"],
     optimizer=MetaPromptOptimizer(
-        reflection_model="openai:/gpt-4o",
+        reflection_model="openai:/gpt-5-nano-2025-08-07",
     ),
     scorers=[answer_quality],
 )

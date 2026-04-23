@@ -54,7 +54,7 @@ def main():
     simulator = ConversationSimulator(
         test_cases=test_cases,
         max_turns=5,
-        user_model="openai:/gpt-5.4-nano-2026-03-17",
+        user_model="openai:/gpt-5-nano-2025-08-07",
     )
 
     # --- セッションIDごとにThreadを管理 ---

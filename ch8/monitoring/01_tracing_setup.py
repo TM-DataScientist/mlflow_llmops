@@ -47,7 +47,7 @@ def handle_request(message: str, user_id: str, session_id: str) -> str:
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {
                 "role": "system",

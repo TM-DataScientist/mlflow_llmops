@@ -36,7 +36,7 @@ print(f"プロンプト '{prompt.name}' (version {prompt.version}) を登録し�
 loaded = mlflow.genai.load_prompt("prompts:/qa-prompt@latest")
 
 response = openai.OpenAI().beta.chat.completions.parse(
-    model="gpt-4o-mini",
+    model="gpt-5-nano-2025-08-07",
     messages=[
         {
             "role": "user",

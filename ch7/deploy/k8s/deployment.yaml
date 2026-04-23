@@ -47,7 +47,7 @@ spec:
               value: "qa-agent-production"
             # モデル設定
             - name: LLM_MODEL
-              value: "gpt-4o-mini"
+              value: "gpt-5-nano-2025-08-07"
             - name: EMBEDDING_MODEL
               value: "text-embedding-3-small"
           resources:
