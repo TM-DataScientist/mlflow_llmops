@@ -66,6 +66,11 @@ def _load_system_prompt() -> str:
         return SYSTEM_PROMPT
 
 
+# @invoke() = この関数を「エンドポイントハンドラ」として登録するデコレータ。
+# エンドポイントハンドラとは、特定のURL（/invocations）へのHTTPリクエストを
+# 受け取って処理する関数のこと。
+# AgentServerは起動時に@invoke()で装飾された関数を探し、
+# "POST /invocations" へのリクエストをこの関数に渡すよう紐付ける。
 @invoke()
 async def handle_request(request) -> ResponsesAgentResponse:
     """QAエージェントへのリクエストを処理するエンドポイントハンドラ。
