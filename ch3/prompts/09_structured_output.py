@@ -45,7 +45,7 @@ loaded = mlflow.genai.load_prompt("prompts:/qa-prompt@latest")
 # beta.chat.completions.parseを使うとOpenAI APIが構造化出力を返す
 # loaded.format()でテンプレート変数を埋め込んでからメッセージとして渡す
 response = openai.OpenAI().beta.chat.completions.parse(
-    model="gpt-4o-mini",
+    model="gpt-5-nano-2025-08-07",
     messages=[
         {
             "role": "user",

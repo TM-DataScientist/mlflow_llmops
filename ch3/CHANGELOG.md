@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-04-23 (2)
+
+### prompts/ 全スクリプトのモデルを gpt-5-nano-2025-08-07 に変更
+
+対象ファイルのモデル指定をすべて `gpt-5-nano-2025-08-07` に統一した。
+
+| ファイル | 変更箇所 |
+|---|---|
+| `04_evaluate_prompt.py` | `model=` × 2 |
+| `05_optimize_metaprompt.py` | `model=` × 2, `reflection_model=` × 1 |
+| `06_optimize_gepa.py` | `model=` × 2, `reflection_model=` × 1 |
+| `08_model_config.py` | `model_name=` × 1 |
+| `09_structured_output.py` | `model=` × 1 |
+
 ## 2026-04-23
 
 ### prompts/ 各スクリプトへの日本語コメント追加

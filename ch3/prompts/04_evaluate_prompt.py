@@ -40,7 +40,7 @@ def create_predict_fn(prompt_version: str):
         )
         # 取得したプロンプトをシステムメッセージとしてOpenAI APIに渡して回答を生成する
         completion = openai.OpenAI().chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-nano-2025-08-07",
             messages=[
                 {"role": "system", "content": prompt.template},
                 {"role": "user", "content": question},
@@ -58,7 +58,7 @@ def answer_quality(inputs, outputs, expectations):
     expected = expectations.get("expected_answer", "")
     # LLMをジャッジとして使い、回答が期待内容を満たしているか yes/no で判定させる
     response = openai.OpenAI().chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-nano-2025-08-07",
         messages=[
             {
                 "role": "user",
