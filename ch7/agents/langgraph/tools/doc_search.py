@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 # AsyncMilvusClient初期化時の警告を抑制（同期処理のみ使用するため影響なし）
 logging.getLogger("langchain_milvus").setLevel(logging.ERROR)
 
-DB_PATH = Path("data") / "milvus.db"
+# 絶対パスで指定することで、実行ディレクトリに依存しない参照を実現する
+# 相対パス("data/milvus.db")だと pymilvus が非同期接続を作る際に
+# "async-" を先頭に付けて "async-data/milvus.db" を探してしまうため、絶対パスを使う
+DB_PATH = Path(__file__).parents[3] / "data" / "milvus.db"
 
 
 @tool
