@@ -138,8 +138,12 @@ async def handle_request(request) -> ResponsesAgentResponse:
         )
 
     # LangGraphAgentでユーザーの質問を処理する
-    # リクエストごとに新しいThreadを作成することでステートレスなサービングを実現する
-    # （会話履歴は保持しない設計 = 各リクエストが独立した会話として処理される）
+    # Thread()を毎回新規作成することで「ステートレス」なサービングを実現する。
+    # ステートレス = 前のリクエストの会話履歴を覚えていない状態。
+    #   リクエスト1: "MLflowとは？"  → Thread(新規) → 回答
+    #   リクエスト2: "もっと詳しく？" → Thread(新規) → 前の文脈なしで処理
+    # サーバーが複数台に増えても（スケールアウト）どのサーバーでも同じように
+    # 処理できるメリットがある。thread_idを使い回せばステートフルにもできる。
     thread = Thread()
     response_text = agent.process_query(user_message, thread)
 
