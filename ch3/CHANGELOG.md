@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-04-23 (4)
+
+### ch7/serving/ 各スクリプトへの詳細な日本語コメント追加
+
+`ch7/serving/` ディレクトリの全スクリプトに、動作がわかるよう詳細な日本語コメントを追加した。
+
+| ファイル | 主な追加コメント |
+|---|---|
+| `agent.py` | @invokeデコレータの役割、Responses APIメッセージ形式の解説、ステートレスサービングの説明、リクエスト処理の各ステップ |
+| `log_model.py` | models-from-codeパターンの説明、championエイリアスの意味、log_model()とレジストリ自動登録の関係、verify_model()のThread/configurable解説 |
+| `model_code.py` | models-from-codeパターンの詳細説明、set_model()の役割、LangGraphのCompiledGraphについて |
+| `start_server.py` | AgentServerとFastAPI/uvicornの関係、appをモジュールレベルで公開する理由、app_import_stringによるマルチワーカーサポートの説明 |
+| `eval_serving.py` | 各スコアラー（RelevanceToQuery/Safety/Guidelines）の評価内容、asyncio.run()による非同期/同期ブリッジの説明、EVAL_DATASETの入力形式解説 |
+
 ## 2026-04-23 (3)
 
 ### ch3 と ch7 の `make ingest` 動作比較
