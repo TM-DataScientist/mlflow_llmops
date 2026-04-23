@@ -48,7 +48,7 @@ test-gateway:
 	@echo ""
 	curl -s -X POST http://localhost:5000/gateway/qa-agent-llm/mlflow/invocations \
 		-H "Content-Type: application/json" \
-		-d '{"messages": [{"role": "user", "content": "hello"}], "max_completion_tokens": 50}' | python3 -m json.tool --no-ensure-ascii
+		-d '{"messages": [{"role": "user", "content": "hello"}]}' | python3 -m json.tool --no-ensure-ascii
 
 # Legacy方式: 別プロセスとしてAI Gatewayを起動（YAML設定ファイル使用）
 # 新方式（Tracking Server統合型）ではこのターゲットは不要です
