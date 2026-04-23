@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2026-04-23 (3)
+
+### ch3 と ch7 の `make ingest` 動作比較
+
+両章の `scripts/web_ingest.py` を比較した。コアロジック（Scrapyクロール → HTMLクリーニング → チャンク分割 → OpenAI Embeddings → Milvus保存）は同一。差異は以下の2点：
+
+| 項目 | ch3 | ch7 |
+|------|-----|-----|
+| DBの保存先 | `PROJECT_ROOT` 基準の絶対パス（スクリプト位置から `ch3/data/milvus.db`） | カレントディレクトリ基準の相対パス（`./data/milvus.db`） |
+| `scraped_data.json` | 取り込み後もファイルを残す（`os.remove` をコメントアウト） | 取り込み後に削除する |
+
 ## 2026-04-23 (2)
 
 ### prompts/ 全スクリプトのモデルを gpt-5-nano-2025-08-07 に変更
