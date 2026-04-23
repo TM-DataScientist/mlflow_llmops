@@ -3,6 +3,16 @@
 GuidelinesスコアラーをMLflowのJudgesタブに登録し、
 get_scorerで取得するデモスクリプト。
 
+【スコアラー登録のメリット】
+  スコアラーをMLflowに登録することで:
+  - 複数のスクリプトやチームメンバーが同じスコアラーを再利用できる
+  - スコアラーの変更履歴をバージョン管理できる
+  - MLflow UIのJudgesタブで一元管理できる
+
+【登録できるスコアラー】
+  Guidelinesスコアラーのみ登録可能。
+  ルールベース（@scorer）スコアラーはコード依存のため登録不可。
+
 実行: make register
 前提: MLflow Tracking Serverが起動していること
 """
@@ -11,10 +21,12 @@ import sys
 
 from dotenv import load_dotenv
 
+# .envファイルから環境変数を読み込む
 load_dotenv()
 
 import mlflow
 
+# 登録対象のスコアラーをインポートする（scorers.pyで定義している）
 from evaluation.scorers import has_reference_link, appropriate_katakana
 
 # MLflow接続設定
@@ -29,18 +41,21 @@ def main():
     print("=" * 60)
 
     try:
-        # has_reference_link を登録
+        # has_reference_link スコアラーをMLflowに登録する
+        # register()を呼ぶと新しいバージョンとして登録される（初回はv1）
         print("\n--- has_reference_link の登録 ---")
         has_reference_link.register()
         print("  登録完了")
 
-        # appropriate_katakana を登録
+        # appropriate_katakana スコアラーをMLflowに登録する
         print("\n--- appropriate_katakana の登録 ---")
         appropriate_katakana.register()
         print("  登録完了")
 
         # 登録済みスコアラーの取得テスト
-        # versionを省略すると最新バージョンを取得。特定バージョンの指定も可能: get_scorer(name="...", version=1)
+        # get_scorer(name="...") でMLflowから取得できることを確認する
+        # versionを省略すると最新バージョンを取得する。
+        # 特定バージョンの指定も可能: get_scorer(name="...", version=1)
         print("\n--- 登録済みスコアラーの取得テスト ---")
         loaded_scorer = mlflow.genai.get_scorer(name="has_reference_link")
         print(f"  取得成功: {loaded_scorer.name}")

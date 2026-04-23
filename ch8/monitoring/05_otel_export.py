@@ -4,6 +4,18 @@
 MLflow TracingをOpenTelemetryプロトコル(OTLP)でエクスポートする
 設定方法を確認します。
 
+【OpenTelemetry連携の目的】
+  MLflowのトレースを、DatadogやGrafana Tempoなどの既存の
+  オブザーバビリティ基盤に転送できるようになる。
+  デュアルエクスポート設定を使えば、MLflow UIと外部ツールの
+  両方でトレースを確認できる。
+
+【デュアルエクスポートとは】
+  トレースを2か所（MLflow Tracking Server + OpenTelemetry Collector）に
+  同時に送信する機能。これにより:
+  - MLflow UI: LLMアプリ専用のUIで詳細を分析
+  - 既存オブザーバビリティ基盤: インフラ・アプリ全体との統合監視
+
 注意: 実際にOTLPエンドポイントに送信するには、
 OpenTelemetry Collectorが稼働している必要があります。
 このスクリプトは設定方法の確認用です。
@@ -17,10 +29,18 @@ OpenTelemetry Collectorが稼働している必要があります。
 # === 1. OSS MLflow: デュアルエクスポート設定 ===
 print("=== OSS MLflow デュアルエクスポート設定 ===\n")
 
+# OSS MLflow でデュアルエクスポートを有効化するための環境変数設定
 oss_config = {
+    # "true"に設定すると、MLflow TracingとOTLPの両方にトレースを送信する
     "MLFLOW_TRACE_ENABLE_OTLP_DUAL_EXPORT": "true",
+    # OTLPエンドポイントのURL（OpenTelemetry Collectorのアドレス）
+    # ローカルで Collector を起動する場合は "http://localhost:4317/v1/traces"
     "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT": "http://localhost:4317/v1/traces",
+    # サービス名: トレースにサービスを識別するメタデータとして付与される
+    # Datadog等では "service" タグとして表示される
     "OTEL_SERVICE_NAME": "qa-agent",
+    # リソース属性: サービスのバージョン・環境・名前空間などを追加するキーバリュー形式
+    # カンマ区切りで複数指定できる
     "OTEL_RESOURCE_ATTRIBUTES": (
         "service.version=1.0.0,"
         "deployment.environment=production,"
@@ -31,14 +51,19 @@ oss_config = {
 print("OSS MLflow で MLflow + OTel Collector の両方にトレースを送信する設定:")
 print()
 for key, value in oss_config.items():
+    # シェルで実行できる export コマンド形式で表示する
     print(f'  export {key}="{value}"')
 
 # === 2. Databricks: デュアルエクスポート設定 ===
 print("\n=== Databricks デュアルエクスポート設定 ===\n")
 
+# Databricks 環境では別の環境変数名を使用する（OSS MLflowとは異なる）
 databricks_config = {
+    # Databricks版のデュアルエクスポート有効化フラグ（OSS版とは変数名が異なる）
     "MLFLOW_ENABLE_DUAL_EXPORT": "true",
+    # OTLPエンドポイント（Databricks環境でも同じ変数名）
     "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT": "http://localhost:4317/v1/traces",
+    # サービス名（OSS版と同じ変数名）
     "OTEL_SERVICE_NAME": "qa-agent",
 }
 
@@ -54,10 +79,11 @@ print("\n=== 動作確認(実際の送信は行いません) ===\n")
 
 import mlflow
 
-# 設定の確認のみ(実際のエクスポートはしない)
+# 実際のエクスポートは行わず、現在のMLflow設定状態のみ確認する
 mlflow.set_experiment("ch8-monitoring-quickstart")
 mlflow.openai.autolog()
 
+# 現在のトラッキングURIとアクティブな実験名を表示する
 print("現在のMLflow Tracking URI:", mlflow.get_tracking_uri())
 print(
     "現在のエクスペリメント:",

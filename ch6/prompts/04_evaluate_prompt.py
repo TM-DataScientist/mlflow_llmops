@@ -15,24 +15,30 @@ import openai
 from dotenv import load_dotenv
 from mlflow.genai.scorers import scorer
 
+# .envファイルからOPENAI_API_KEYなどの環境変数を読み込む
 load_dotenv()
 
+# MLflowのトラッキングサーバーと実験名を設定する
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("プロンプト評価")
-mlflow.openai.autolog()  # トレースにプロンプトバージョンをひも付ける
+# OpenAI APIの呼び出しを自動でトレースし、どのプロンプトバージョンを使ったか記録する
+mlflow.openai.autolog()
 
-# 評価データのインポート
+# 評価に使う質問・期待回答のデータセットをインポートする
 from data.eval_dataset import EVAL_DATA
 
 
 def create_predict_fn(prompt_version: str):
     """指定バージョンのプロンプトで予測関数を作成する。"""
 
+    # @mlflow.traceでこの関数の入出力をMLflowのトレースとして記録する
     @mlflow.trace
     def predict_fn(question: str) -> str:
+        # Prompt Registryから指定バージョンのプロンプトを取得する
         prompt = mlflow.genai.load_prompt(
             f"prompts:/qa-agent-system-prompt/{prompt_version}"
         )
+        # 取得したプロンプトをシステムメッセージとしてOpenAI APIに渡して回答を生成する
         completion = openai.OpenAI().chat.completions.create(
             model="gpt-5-nano-2025-08-07",
             messages=[
@@ -45,11 +51,12 @@ def create_predict_fn(prompt_version: str):
     return predict_fn
 
 
-# カスタムスコアラー: 回答品質の評価
+# @scorerデコレータでMLflowの評価スコアラーとして登録する
 @scorer
 def answer_quality(inputs, outputs, expectations):
     """回答が期待される内容をカバーしているか評価する。"""
     expected = expectations.get("expected_answer", "")
+    # LLMをジャッジとして使い、回答が期待内容を満たしているか yes/no で判定させる
     response = openai.OpenAI().chat.completions.create(
         model="gpt-5-nano-2025-08-07",
         messages=[
@@ -65,11 +72,12 @@ def answer_quality(inputs, outputs, expectations):
             }
         ],
     )
+    # "yes"なら1(合格)、"no"なら0(不合格)としてスコアを返す
     judgment = response.choices[0].message.content.strip().lower()
     return judgment == "yes"
 
 
-# バージョン1で評価
+# バージョン1のプロンプトで全評価データを実行し、スコアをMLflowに記録する
 print("=== バージョン1の評価 ===")
 results_v1 = mlflow.genai.evaluate(
     data=EVAL_DATA,
@@ -78,7 +86,7 @@ results_v1 = mlflow.genai.evaluate(
 )
 print(f"バージョン1: {results_v1.metrics}")
 
-# バージョン2で評価
+# バージョン2のプロンプトで同じ評価データを実行し、改善効果を比較する
 print("\n=== バージョン2の評価 ===")
 results_v2 = mlflow.genai.evaluate(
     data=EVAL_DATA,

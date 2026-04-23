@@ -9,9 +9,11 @@ QAエージェントのシステムプロンプトをPrompt Registryに登録す
 
 import mlflow
 
+# MLflowのトラッキングサーバーに接続する
 mlflow.set_tracking_uri("http://localhost:5000")
 
 # 第4章のQAエージェントで使用していたシステムプロンプト
+# コード内にハードコードされていたものをPrompt Registryに移行する
 initial_prompt = """
 あなたはMLflowに関する質問に答える専門アシスタントです。
 ユーザーの質問に対して、必要に応じてドキュメント検索やWeb検索を使用して、
@@ -23,6 +25,8 @@ initial_prompt = """
 - 情報源を明記する
 """
 
+# プロンプトをPrompt Registryに登録する(初回登録でversion 1が作成される)
+# tags引数で作成者・用途・言語などのメタデータを付与できる
 prompt = mlflow.genai.register_prompt(
     name="qa-agent-system-prompt",
     template=initial_prompt,
@@ -37,5 +41,6 @@ prompt = mlflow.genai.register_prompt(
 print(f"Registered: {prompt.name} (version {prompt.version})")
 
 # テンプレート変数のデモ(原稿の補足説明)
+# {{ }} で囲んだ変数はprompt.format(変数名=値)で実行時に埋め込める
 print(f"\nテンプレート変数の例:")
 print(f"  二重中括弧 {{{{ }}}} で変数を定義し、prompt.format()で埋め込みます")

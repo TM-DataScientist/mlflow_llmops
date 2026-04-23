@@ -19,15 +19,19 @@ from dotenv import load_dotenv
 from mlflow.genai.optimize import GepaPromptOptimizer
 from mlflow.genai.scorers import scorer
 
+# .envからOPENAI_API_KEYを読み込む
 load_dotenv()
 
+# MLflowのトラッキングサーバーと実験名を設定する
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("プロンプト最適化 - GEPA")
 
+# 評価に使う質問・期待回答のデータセットをインポートする
 from data.eval_dataset import EVAL_DATA
 
 
 def predict_fn(question: str) -> str:
+    # Prompt Registryから最新バージョンのプロンプトをロードして回答を生成する
     prompt = mlflow.genai.load_prompt("prompts:/qa-agent-system-prompt@latest")
     completion = openai.OpenAI().chat.completions.create(
         model="gpt-5-nano-2025-08-07",
@@ -39,6 +43,7 @@ def predict_fn(question: str) -> str:
     return completion.choices[0].message.content
 
 
+# LLMをジャッジとして使い、回答が期待内容をカバーしているかをyes/noで判定するスコアラー
 @scorer
 def answer_quality(inputs, outputs, expectations):
     expected = expectations.get("expected_answer", "")
@@ -64,8 +69,12 @@ print("GEPAによるプロンプト最適化を開始します...")
 print(f"学習データ: {len(EVAL_DATA)}件")
 print("(LLMを多数回呼び出すため、完了まで数分かかる場合があります)\n")
 
+# 所要時間を計測するために開始時刻を記録する
 start_time = time.time()
 
+# GepaPromptOptimizerでプロンプトを反復最適化する
+# GEPAはリフレクションを使ってスコアが向上するまでプロンプトを繰り返し書き直す
+# max_metric_callsでLLM呼び出し上限を設定し、コストを制御する
 result = mlflow.genai.optimize_prompts(
     predict_fn=predict_fn,
     train_data=EVAL_DATA,
@@ -86,6 +95,7 @@ if result.initial_eval_score is not None:
 if result.final_eval_score is not None:
     print(f"最終スコア: {result.final_eval_score:.3f}")
 
+# 最適化されたプロンプトはPrompt Registryに新バージョンとして自動登録されている
 optimized = result.optimized_prompts[0]
 print(f"\n最適化されたプロンプト: {optimized.name} (version {optimized.version})")
 print(f"テンプレート(先頭200文字):\n{optimized.template[:200]}...")

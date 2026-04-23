@@ -9,9 +9,11 @@
 
 import mlflow
 
+# MLflowのトラッキングサーバーに接続する
 mlflow.set_tracking_uri("http://localhost:5000")
 
 # 第5章の評価結果に基づいて改善したプロンプト
+# Web検索優先・引用不足・冗長という問題点に対処するためのガイドラインを追加している
 improved_prompt_v2 = """
 あなたはMLflowに関する質問に答える専門アシスタントです。
 ユーザーの質問に対して、検索ツールを使用して正確な回答を提供してください。
@@ -41,6 +43,7 @@ improved_prompt_v2 = """
    - 推測と事実を明確に区別する
 """
 
+# 同名プロンプトに対してregister_promptを再度呼ぶと、新しいバージョンとして登録される
 updated = mlflow.genai.register_prompt(
     name="qa-agent-system-prompt",
     template=improved_prompt_v2,
@@ -48,7 +51,7 @@ updated = mlflow.genai.register_prompt(
 )
 print(f"Updated to version {updated.version}")
 
-# 不変性の確認
+# バージョン番号を直接指定してロードし、各バージョンが独立して保持されていることを確認する
 v1 = mlflow.genai.load_prompt("prompts:/qa-agent-system-prompt/1")
 v2 = mlflow.genai.load_prompt("prompts:/qa-agent-system-prompt/2")
 print(f"\nバージョン1(先頭40文字): {v1.template.strip()[:40]}...")
