@@ -1,66 +1,73 @@
-.PHONY: install ingest vibe-check test-standard test-custom register eval sim eval-all cli clean help
+.PHONY: install register version alias eval optimize-meta optimize-gepa deploy model-config structured all clean help
 
 help:
-	@echo "第5章: 改善サイクルを加速する - 評価の仕組み"
+	@echo "第6章: Prompt Registry - プロンプトエンジニアリングの体系化"
 	@echo ""
 	@echo "セットアップ:"
-	@echo "  make install        依存関係をインストール"
-	@echo "  make ingest         ドキュメントをベクトルストアに取り込み"
+	@echo "  make install          依存関係をインストール"
 	@echo ""
-	@echo "原稿順に実行:"
-	@echo "  make vibe-check     5.2: テスト質問を実行してトレースを確認"
-	@echo "  make test-standard  5.4.4: 標準スコアラーの個別テスト"
-	@echo "  make test-custom    5.4.5: カスタムスコアラーの個別テスト"
-	@echo "  make register       5.4.6: スコアラーをMLflowに登録"
-	@echo "  make eval           5.5-5.6: 自動評価の実行 (メインスクリプト)"
-	@echo "  make sim            5.7: [応用] 会話シミュレーション"
+	@echo "基本フロー (01-04, OPENAI_API_KEYは04から必要):"
+	@echo "  make register         6.2: プロンプトの登録"
+	@echo "  make version          6.2: バージョン更新(改善版プロンプト)"
+	@echo "  make alias            6.2: エイリアスによるライフサイクル管理"
+	@echo "  make eval             6.3: 改善したプロンプトで評価 (OPENAI_API_KEY必要)"
+	@echo ""
+	@echo "応用 (OPENAI_API_KEY必要):"
+	@echo "  make optimize-meta    6.3.4: MetaPromptによる構造改善"
+	@echo "  make optimize-gepa    6.3.4: GEPAによる反復最適化 (コスト注意)"
+	@echo "  make deploy           6.3.2: 段階的デプロイとロールバック"
+	@echo "  make model-config     6.2.6: モデルパラメータの紐付け"
+	@echo "  make structured       6.2.7: 構造化出力 (OPENAI_API_KEY必要)"
 	@echo ""
 	@echo "一括実行:"
-	@echo "  make eval-all       vibe-check → eval を順番に実行"
+	@echo "  make all              基本フロー + deploy + model-config + structured"
 	@echo ""
 	@echo "その他:"
-	@echo "  make cli            CLIエージェントを起動"
-	@echo "  make clean          生成されたファイルを削除"
+	@echo "  make clean            MLflowデータを削除"
 
 install:
 	uv sync
 
-ingest:
-	uv run python scripts/web_ingest.py
-
-cli:
-	uv run python -m cli.main
-
-# 5.2: Vibe Check
-vibe-check:
-	uv run python evaluation/01_vibe_check.py
-
-# 5.4.4: 標準スコアラーのテスト
-test-standard:
-	uv run python evaluation/02_standard_scorers.py
-
-# 5.4.5: カスタムスコアラーのテスト
-test-custom:
-	uv run python evaluation/03_custom_scorers.py
-
-# 5.4.6: スコアラーの登録
+# 6.2: プロンプトの登録
 register:
-	uv run python evaluation/04_register_scorers.py
+	uv run python prompts/01_register_prompt.py
 
-# 5.5-5.6: 自動評価の実行
+# 6.2: バージョン更新
+version:
+	uv run python prompts/02_version_update.py
+
+# 6.2: エイリアス管理
+alias:
+	uv run python prompts/03_alias_management.py
+
+# 6.3: プロンプトの評価
 eval:
-	uv run python evaluation/05_run_evaluation.py
+	uv run python prompts/04_evaluate_prompt.py
 
-# 5.7: 会話シミュレーション
-sim:
-	uv run python evaluation/06_conversation_sim.py
+# 6.3.4: MetaPromptによる最適化
+optimize-meta:
+	uv run python prompts/05_optimize_metaprompt.py
 
-# 一括実行
-eval-all: vibe-check eval
-	@echo "評価完了。MLflow UI (http://localhost:5000) で結果を確認してください。"
+# 6.3.4: GEPAによる最適化
+optimize-gepa:
+	uv run python prompts/06_optimize_gepa.py
+
+# 6.3.2: 段階的デプロイとロールバック
+deploy:
+	uv run python prompts/07_deploy_lifecycle.py
+
+# 6.2.6: モデルパラメータの紐付け
+model-config:
+	uv run python prompts/08_model_config.py
+
+# 6.2.7: 構造化出力
+structured:
+	uv run python prompts/09_structured_output.py
+
+# 一括実行 (optimize-meta/optimize-gepaは除外: コストが高いため)
+all: register version alias eval deploy model-config structured
+	@echo "完了。MLflow UI (http://localhost:5000) のPromptsタブで結果を確認してください。"
 
 clean:
-	rm -rf data/milvus.db
-	rm -rf .scrapy_cache
+	rm -rf mlflow.db mlruns/
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
