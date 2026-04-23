@@ -15,8 +15,14 @@ import os
 
 logger = logging.getLogger(__name__)
 
-# AsyncMilvusClient初期化時の警告を抑制（同期処理のみ使用するため影響なし）
-logging.getLogger("langchain_milvus").setLevel(logging.ERROR)
+# AsyncMilvusClient初期化時のエラーログを抑制する
+# pymilvusはMilvus Lite（ファイルDB）使用時に非同期クライアント用の接続を
+# "async-{パス}" という名前で内部的に作ろうとするが、そのパスは存在しないためエラーになる
+# 同期処理のみ使用するため実害はなく、ログを抑制して出力をクリーンにする
+logging.getLogger("langchain_milvus").setLevel(logging.CRITICAL)
+# pymilvusはMilvus Lite使用時に非同期接続を "async-{パス}" で試みてエラーを出す
+# ロガー名はモジュールの __name__ = "pymilvus.milvus_client._utils"
+logging.getLogger("pymilvus.milvus_client._utils").setLevel(logging.CRITICAL)
 
 # 絶対パスで指定することで、実行ディレクトリに依存しない参照を実現する
 # 相対パス("data/milvus.db")だと pymilvus が非同期接続を作る際に
