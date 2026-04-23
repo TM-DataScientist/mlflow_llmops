@@ -7,6 +7,8 @@
 from typing import List, Optional
 import os
 
+import mlflow
+
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
@@ -17,6 +19,10 @@ from langchain_openai import ChatOpenAI
 from agents.thread import Message, Thread
 from .tools import doc_search, web_search, open_url
 
+# MLflowトレーシングを有効化
+mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_experiment("MLflow QAエージェント")
+mlflow.langchain.autolog()
 
 # システムプロンプト: エージェントの役割と振る舞いを定義
 SYSTEM_PROMPT = """あなたはMLflowに関する質問に答える専門アシスタントです。
@@ -106,6 +112,7 @@ class LangGraphAgent:
                 return msg
         return None
 
+    @mlflow.trace
     def process_query(self, query: str, thread: Thread) -> str:
         """ユーザーのクエリをエージェントで処理する。
 
@@ -121,6 +128,14 @@ class LangGraphAgent:
         Returns:
             エージェントの回答（文字列）
         """
+        # トレースにタグを追加
+        mlflow.update_current_trace(
+            tags={
+                "environment": "development",
+                "agent_version": "v1.0",
+            }
+        )
+
         print(f"クエリを処理中: {query}")
 
         incoming_messages = []

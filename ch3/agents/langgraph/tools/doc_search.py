@@ -3,22 +3,19 @@
 このモジュールは、事前にインジェストされたMLflowドキュメントから
 関連情報を検索するツールを提供します。
 """
+from functools import lru_cache
 import logging
 from pathlib import Path
+import os
 
 from langchain.tools import tool
-from langchain_milvus import Milvus
 from langchain_openai import OpenAIEmbeddings
-from pymilvus import connections
-
-import os
+from pymilvus import MilvusClient
 
 logger = logging.getLogger(__name__)
 
-# AsyncMilvusClient初期化時の警告を抑制（同期処理のみ使用するため影響なし）
-logging.getLogger("langchain_milvus").setLevel(logging.ERROR)
-
-DB_PATH = Path("data") / "milvus.db"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DB_PATH = PROJECT_ROOT / "data" / "milvus.db"
 
 
 @tool
@@ -34,55 +31,49 @@ def doc_search(query: str) -> str:
     Returns:
         検索結果のテキスト、またはエラーメッセージ
     """
-    # データベースが存在しない場合
+    # raise ValueError("ドキュメントでーたベースに接続できません")
     if not DB_PATH.exists():
         return "ドキュメント検索は利用できません。先に 'make ingest' を実行してください。"
 
-    # リトライロジック（接続エラー対策）
-    max_retries = 2
-    for attempt in range(max_retries):
-        try:
-            retriever = _get_retriever()
-            if retriever is None:
-                return "ドキュメント検索は利用できません。先に 'make ingest' を実行してください。"
-
-            # 検索を実行
-            docs = retriever.invoke(query)
-            # 結果を結合して返す
-            return "\n\n".join([doc.page_content for doc in docs])
-
-        except Exception as e:
-            # 接続エラーの場合はリトライ
-            if "Connection refused" in str(e) or "connect" in str(e).lower():
-                logger.warning(f"Milvus接続に失敗しました（試行 {attempt + 1}回目）、接続をリセット中...")
-                _reset_milvus_connection()
-                if attempt == max_retries - 1:
-                    return "接続の問題により、ドキュメント検索が一時的に利用できません。もう一度お試しください。"
-            else:
-                raise
-
-
-def _reset_milvus_connection():
-    """Milvusの接続をリセットして古いソケットをクリアする。"""
     try:
-        for alias in list(connections.list_connections()):
-            connections.disconnect(alias[0])
+        results = _search_documents(query, k=5)
     except Exception:
-        pass
+        logger.exception("Milvus検索に失敗しました")
+        return "ドキュメント検索中にエラーが発生しました。少し待ってから再度お試しください。"
+
+    if not results:
+        return "関連するドキュメントが見つかりませんでした。"
+
+    formatted_results = []
+    for row in results:
+        entity = row.get("entity", {})
+        text = entity.get("text", "").strip()
+        title = entity.get("title", "").strip()
+        url = entity.get("url", "").strip()
+        parts = [text]
+        if title:
+            parts.append(f"Title: {title}")
+        if url:
+            parts.append(f"URL: {url}")
+        formatted_results.append("\n".join(part for part in parts if part))
+    return "\n\n".join(formatted_results)
 
 
-def _get_retriever():
-    """Milvusデータベースからリトリーバーを取得する。"""
-    if not DB_PATH.exists():
-        return None
+@lru_cache(maxsize=1)
+def _get_embeddings() -> OpenAIEmbeddings:
+    return OpenAIEmbeddings(model=os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small"))
 
-    embeddings = OpenAIEmbeddings(model=os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small"))
 
-    # Milvusベクトルストアに接続
-    vectorstore = Milvus(
-        embedding_function=embeddings,
-        connection_args={"uri": str(DB_PATH)},
+@lru_cache(maxsize=1)
+def _get_client() -> MilvusClient:
+    return MilvusClient(uri=str(DB_PATH.resolve()))
+
+
+def _search_documents(query: str, k: int) -> list[dict]:
+    query_vector = _get_embeddings().embed_query(query)
+    return _get_client().search(
         collection_name="mlflow_docs",
-    )
-    # 上位5件を返すリトリーバーを作成
-    return vectorstore.as_retriever(search_kwargs={"k": 5})
+        data=[query_vector],
+        limit=k,
+        output_fields=["text", "title", "url"],
+    )[0]

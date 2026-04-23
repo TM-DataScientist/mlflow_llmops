@@ -46,6 +46,8 @@ DEFAULT_IGNORE_PATTERNS = [
     r"/api_reference/",
 ]
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 
 class DocsSpider(scrapy.Spider):
     """ドキュメントをクロールするScrapyスパイダー。"""
@@ -255,7 +257,7 @@ def ingest_url(base_url: str, db_path: Path, chunk_size: int, max_pages: int | N
     try:
         with open("scraped_data.json", "r") as f:
             scraped_data = json.load(f)
-        os.remove("scraped_data.json")
+        # os.remove("scraped_data.json")
     except FileNotFoundError:
         scraped_data = []
 
@@ -339,7 +341,7 @@ def main():
     args = parser.parse_args()
 
     # 出力ディレクトリを作成
-    output_dir = Path(args.output_dir)
+    output_dir = (PROJECT_ROOT / args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     db_path = output_dir / "milvus.db"
 
