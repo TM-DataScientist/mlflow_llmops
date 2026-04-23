@@ -99,7 +99,10 @@ async def handle_request(request) -> ResponsesAgentResponse:
     # inputは複数のメッセージを含むリスト（マルチターン対応の設計）
     user_message = None
     for msg in request.input:
-        # Pydanticモデルの場合は辞書に変換してから処理する
+        # msgの型はリクエストの受け取り方によって異なる：
+        #   - Pydanticオブジェクトの場合: model_dump()メソッドが存在する → 辞書に変換
+        #   - すでにdictの場合: model_dump()メソッドが存在しない → そのまま使う
+        # hasattr()で型を問わず後続の.get()操作が安全にできるよう辞書に統一する
         msg_dict = msg.model_dump() if hasattr(msg, "model_dump") else msg
         if msg_dict.get("role") == "user":
             content = msg_dict.get("content", "")
