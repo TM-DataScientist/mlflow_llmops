@@ -14,6 +14,12 @@ mlartifacts/
 **/mlartifacts/
 data/milvus.db
 
+# クローリング・取り込み中間ファイル
+scraped_data.json
+**/scraped_data.json
+.scrapy_cache/
+**/.scrapy_cache/
+
 # Python
 __pycache__/
 **/__pycache__/

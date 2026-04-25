@@ -257,7 +257,7 @@ def ingest_url(base_url: str, db_path: Path, chunk_size: int, max_pages: int | N
     try:
         with open("scraped_data.json", "r") as f:
             scraped_data = json.load(f)
-        # os.remove("scraped_data.json")
+        os.remove("scraped_data.json")
     except FileNotFoundError:
         scraped_data = []
 

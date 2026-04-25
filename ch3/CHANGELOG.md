@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-04-25
+
+### `scraped_data.json` を中間生成物として扱うよう変更
+
+MLflow公式ドキュメントのクロール結果をリポジトリに含めないよう、`ch3/scraped_data.json` を削除し、今後は `.gitignore` で除外するようにした。
+
+また、`ch3/scripts/web_ingest.py` は他章と同様に、Milvusへの取り込み後に `scraped_data.json` を削除する挙動に揃えた。
+
 ## 2026-04-23 (4)
 
 ### ch7/serving/ 各スクリプトへの詳細な日本語コメント追加
