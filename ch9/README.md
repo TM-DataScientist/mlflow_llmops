@@ -7,6 +7,7 @@
 | ノートブック | テーマ | 学習内容 |
 |------------|--------|----------|
 | `9.1.ipynb` | 文書情報抽出モデルの構築 | Prompt Registry、Models from Code、カスタムPyFuncモデル、モデルエイリアス、サービング |
+| `9.1_serving_client.ipynb` | 文書情報抽出モデルのAPI呼び出し | `9.1.ipynb`で起動したサービングAPIへのリクエスト、単発推論、バッチ推論 |
 | `9.2.ipynb` | エージェント型RAGシステムの構築 | ベクトルDB(Chroma)、LangGraphワークフロー、動的ルーティング・再試行、MLflow Evaluation |
 | `9.3.ipynb` | スーパーバイザー型マルチエージェント | マルチエージェント設計パターン、ResponsesAgent、Safety/Guidelines/カスタムスコアラー/Agent-as-a-Judge評価 |
 
