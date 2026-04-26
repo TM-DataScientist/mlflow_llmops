@@ -23,7 +23,7 @@
 cp ../.env .env
 ```
 
-各ノートブック内の `YOUR_API_KEY` を実際のキーに置き換えてください。
+`.env` またはシェル環境変数に `OPENAI_API_KEY` を設定してください。ノートブック内では `YOUR_API_KEY` を直接代入しません。
 
 ## 実行方法
 
@@ -35,7 +35,7 @@ uv sync
 uv run jupyter notebook
 ```
 
-依存パッケージは `pyproject.toml` で管理しています。各ノートブック冒頭の `%pip install` セルは、`uv sync` 済みであれば再実行不要です。`YOUR_API_KEY` を実際のOpenAI APIキーに置き換えてから実行してください。
+依存パッケージは `pyproject.toml` で管理しています。各ノートブック冒頭の `%pip install` セルは、`uv sync` 済みであれば再実行不要です。`OPENAI_API_KEY` を設定してから実行してください。
 
 MLflow Tracking Serverはローカルで起動しておく必要があります。
 
