@@ -28,12 +28,14 @@ cp ../.env .env
 ## 実行方法
 
 ```bash
+# uvで仮想環境を作成し、依存関係をインストール
+uv sync
+
 # Jupyter Notebookを起動
-pip install notebook
-jupyter notebook
+uv run jupyter notebook
 ```
 
-各ノートブック冒頭の `%pip install` セルで依存パッケージがインストールされます。`YOUR_API_KEY` を実際のOpenAI APIキーに置き換えてから実行してください。
+依存パッケージは `pyproject.toml` で管理しています。各ノートブック冒頭の `%pip install` セルは、`uv sync` 済みであれば再実行不要です。`YOUR_API_KEY` を実際のOpenAI APIキーに置き換えてから実行してください。
 
 MLflow Tracking Serverはローカルで起動しておく必要があります。
 

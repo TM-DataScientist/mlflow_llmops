@@ -1,0 +1,23 @@
+[project]
+name = "ch9-tutorial-notebooks"
+version = "0.1.0"
+description = "MLflow LLMOps chapter 9 tutorial notebook environment"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=1.0.0",
+    "ipykernel>=7.0.0",
+    "langchain[openai]>=1.0.0",
+    "langchain-community>=0.4.0",
+    "langchain-text-splitters>=1.0.0",
+    "langgraph>=1.0.0",
+    "litellm>=1.70.0",
+    "mlflow[genai]>=3.9.0",
+    "notebook>=7.0.0",
+    "openai>=1.0.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.uv]
+package = false
