@@ -3,18 +3,43 @@
 # 使用方法:
 #   kubectl apply -f deploy/k8s/deployment.yaml
 #   kubectl apply -f deploy/k8s/service.yaml
+
+# Kubernetes APIバージョンとリソース種別
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # Deploymentの名前（kubectl get deployments で表示される）
   name: qa-agent
   labels:
     app: qa-agent
     chapter: "7"
 spec:
+  # --- Podとは ---
+  # Podは Kubernetes で実行される最小単位。
+  # Dockerコンテナを「直接」クラスターに置くのではなく、
+  # 必ずPodという薄いラッパーに包んで動かす。
+  #
+  # ・1つのPodには1つ以上のコンテナが入る
+  #   （通常は1コンテナ1Pod。サイドカーパターンなどで複数になることもある）
+  # ・Pod内のコンテナは同じIPアドレス・同じボリュームを共有する
+  # ・Podは使い捨て: クラッシュすると新しいPodが作られ、IPも変わる
+  #   → だから固定エンドポイントとして Service が必要になる（service.yaml 参照）
+  #
+  # Deploymentは「このPodを常にN個維持する」という宣言。
+  # Podが落ちたら自動で新しいPodを起動してくれる。
+
+  # Podのレプリカ数（水平スケールアウト）
+  # 3つのPodを並列稼働させて可用性と負荷分散を確保する
   replicas: 3
+
+  # このDeploymentが管理するPodを識別するセレクター
+  # template.metadata.labels と一致する必要がある
   selector:
     matchLabels:
       app: qa-agent
+
+  # 作成するPodのテンプレート定義
+  # ここ以下が「1つのPodをどう作るか」の設計図になる
   template:
     metadata:
       labels:
@@ -22,11 +47,18 @@ spec:
     spec:
       containers:
         - name: qa-agent
+          # デプロイするコンテナイメージ
+          # make docker-build でビルドしたイメージを指定する
           image: qa-agent-server:latest
           ports:
+            # Agent ServerがリッスンするHTTPポート（serving/start_server.py）
             - containerPort: 8080
           env:
-            # APIキー（Kubernetes Secretから取得）
+            # --- APIキー（Kubernetes Secretから取得） ---
+            # 事前に以下のコマンドでSecretを作成しておく:
+            #   kubectl create secret generic llm-api-keys \
+            #     --from-literal=openai-api-key=$OPENAI_API_KEY \
+            #     --from-literal=exa-api-key=$EXA_API_KEY
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -37,35 +69,54 @@ spec:
                 secretKeyRef:
                   name: llm-api-keys
                   key: exa-api-key
-            # MLflow設定
+
+            # --- MLflow Tracking Server接続先 ---
+            # クラスター内のMLflowサービス名（service.yaml で定義）を指定する
             - name: MLFLOW_TRACKING_URI
               value: "http://mlflow-server:5000"
-            # 本番トレーシング設定（8章の監視で活用）
+
+            # --- MLflow Tracing設定（8章の監視で活用） ---
+            # 非同期でトレースを送信することで、エージェントのレイテンシーへの影響を最小化する
             - name: MLFLOW_ENABLE_ASYNC_TRACE_LOGGING
               value: "true"
+            # OpenTelemetryサービス名（トレースのフィルタリングに使用）
             - name: OTEL_SERVICE_NAME
               value: "qa-agent-production"
-            # モデル設定
+
+            # --- モデル設定 ---
+            # 推論に使用するLLMモデル名
             - name: LLM_MODEL
               value: "gpt-5-nano-2025-08-07"
+            # ドキュメント検索（RAG）に使用する埋め込みモデル名
             - name: EMBEDDING_MODEL
               value: "text-embedding-3-small"
+
+          # --- リソース制限 ---
+          # requests: Podのスケジューリング時に必要な最低リソース量
+          # limits: Podが使用できるリソースの上限（超えるとOOMKillまたはCPUスロットル）
           resources:
             requests:
               memory: "512Mi"
-              cpu: "500m"
+              cpu: "500m"    # 0.5コア
             limits:
               memory: "1Gi"
-              cpu: "1000m"
+              cpu: "1000m"   # 1コア
+
+          # --- ヘルスチェック ---
+          # readinessProbe: トラフィックを受け付けられる状態か確認する
+          #   失敗するとServiceのエンドポイントから除外され、リクエストが来なくなる
           readinessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 30   # コンテナ起動後、最初のチェックまで待機する秒数
+            periodSeconds: 10         # チェックの間隔（秒）
+
+          # livenessProbe: Podが正常に動作しているか確認する
+          #   失敗するとPodが再起動される（デッドロック・フリーズ検知に有効）
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 60   # readinessProbeより長めに設定して誤再起動を防ぐ
             periodSeconds: 30

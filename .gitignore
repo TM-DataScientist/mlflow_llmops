@@ -1,6 +1,8 @@
 .DS_Store
 .claude/
 CLAUDE.md
+.codex
+.codex/
 .env
 **/.env
 .venv/
@@ -13,6 +15,8 @@ mlruns/
 mlartifacts/
 **/mlartifacts/
 data/milvus.db
+chroma_store/
+**/chroma_store/
 
 # クローリング・取り込み中間ファイル
 scraped_data.json

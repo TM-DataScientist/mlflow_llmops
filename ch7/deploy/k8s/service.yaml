@@ -1,14 +1,64 @@
 # QAエージェント Kubernetes Service（7.5.3節）
+#
+# Serviceは複数のPodへのネットワークアクセスを一元化する。
+# Deploymentで3つのPodが動いていても、クライアントはこのServiceの
+# 単一エンドポイント（qa-agent-service:80）に接続するだけでよい。
+# Kubernetesが自動的にPodへ負荷分散する。
+
 apiVersion: v1
 kind: Service
 metadata:
+  # Service名（クラスター内DNSでこの名前で名前解決できる）
+  # 例: http://qa-agent-service/invocations
   name: qa-agent-service
   labels:
     app: qa-agent
 spec:
+  # --- セレクターとは ---
+  # ServiceはIPアドレスでPodを指定するのではなく、「ラベル」で動的に紐づける。
+  #
+  # 仕組み:
+  #   1. deployment.yaml で各Podに「app: qa-agent」というラベルを貼る
+  #   2. このServiceの selector に「app: qa-agent」を指定する
+  #   3. KubernetesがラベルのついたPodを自動的に転送先リストに登録する
+  #
+  # ラベルで紐づける理由:
+  #   PodはクラッシュするたびにIPが変わる（使い捨て）。
+  #   IPで指定すると再起動のたびに設定変更が必要になる。
+  #   ラベルなら「app: qa-agent というラベルのPodすべて」を常に追跡できる。
+  #   Podが増減しても（スケールアウト・ローリングアップデートなど）
+  #   Service側の設定変更は一切不要。
   selector:
     app: qa-agent
+
+  # --- ポートとは ---
+  # ポートは「同じIPアドレスの中で、どのアプリ宛の通信か」を区別する番号（0〜65535）。
+  #
+  # たとえば1台のサーバーで複数のアプリが動いている場合:
+  #   :80  → Webサーバー (HTTP)
+  #   :443 → Webサーバー (HTTPS)
+  #   :5000 → MLflow Tracking Server
+  #   :8080 → このQAエージェント
+  # IPアドレスが「建物の住所」なら、ポートは「部屋番号」のようなもの。
+  #
+  # このServiceには2つのポートが登場する:
+  #
+  #   port (80):
+  #     クライアント（他のPodや外部）がServiceに接続するときに使う番号。
+  #     HTTPのデフォルト番号80にすることで、URLにポート番号を省略できる。
+  #     例: http://qa-agent-service/invocations （:80 を書かなくてよい）
+  #
+  #   targetPort (8080):
+  #     Serviceが受け取ったリクエストを転送する先のPodのポート番号。
+  #     deployment.yaml の containerPort: 8080 と一致している必要がある。
+  #
+  # 流れ: クライアント → Service(:80) → Pod(:8080) → Agent Server
   ports:
     - port: 80
       targetPort: 8080
+
+  # Serviceの公開範囲
+  # ClusterIP: クラスター内部からのみアクセス可能（デフォルト・最もセキュア）
+  # NodePort:  各ノードのIPで外部からアクセス可能（開発・検証向け）
+  # LoadBalancer: クラウドのロードバランサーを使って外部公開（本番向け）
   type: ClusterIP
